@@ -5,11 +5,10 @@
 # COMMAND ----------
 
 from pyspark.sql import functions as F
-from delta.tables import DeltaTable
 
 # COMMAND ----------
 
-# MAGIC %run /Workspace/Users/axl.dxn@gmail.com/atlikon_pipeline/1_setup/utilities
+# MAGIC %run ../../1_setup/utilities
 
 # COMMAND ----------
 
