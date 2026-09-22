@@ -147,10 +147,8 @@ gold_parent_delta.alias("parent_gold").merge(
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC DROP TABLE fmcg.bronze.staging_orders;
+spark.sql(f"DROP TABLE {catalog}.{bronze_schema}.staging_orders;")
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC DROP TABLE fmcg.silver.staging_orders;
+spark.sql(f"DROP TABLE {catalog}.{silver_schema}.staging_orders;")

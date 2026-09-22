@@ -139,7 +139,7 @@ df_orders = df_orders.withColumn('product_id', F.col('product_id').cast('string'
 
 # COMMAND ----------
 
-df_products = spark.table("fmcg.silver.products")
+df_products = spark.table(f"{catalog}.{silver_schema}.products")
 df_joined = (
     df_orders
     .join(

@@ -80,7 +80,7 @@ display(df_check.limit(10))
 # COMMAND ----------
 
 # Rename customer_id column
-df_sb_customers = spark.table("fmcg.gold.sb_dim_customers").select(
+df_sb_customers = spark.table(f"{catalog}.{gold_schema}.sb_dim_customers").select(
     F.col("customer_id").alias("customer_code"),
     "customer",
     "market",
@@ -90,7 +90,7 @@ df_sb_customers = spark.table("fmcg.gold.sb_dim_customers").select(
 
 # COMMAND ----------
 
-delta_table = DeltaTable.forName(spark, "fmcg.gold.dim_customers") 
+delta_table = DeltaTable.forName(spark, f"{catalog}.{gold_schema}.dim_customers")
 
 delta_table.alias("target").merge(
     source = df_sb_customers.alias("source"), 
