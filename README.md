@@ -107,6 +107,10 @@ La tabla `fact_orders` se almacena con una **granularidad mensual** (`sold_quant
 
 ```
 atlikon_project-development/
+├── databricks.yml                   # Definición de Databricks Asset Bundle
+├── resources/
+│   └── daily_pipeline_job.yml       # Job DAG, programación y dependencias de tareas (como código)
+│
 ├── 1_setup/
 │   ├── setup_catalogs.py            # Crea el catálogo y los esquemas bronze/silver/gold 
 │   ├── utilities.py                 # Constantes de nombres de esquemas compartidos (presentes en todos los notebooks) 
@@ -161,6 +165,25 @@ En la capa *gold*, ambas variantes:
 ---
 
 ## 7. Orquestación
+
+Un Job de Databricks ejecuta el pipeline completo diariamente a las 23:00 (America/Mexico_City), procesando los notebooks según el orden de dependencias: dimensiones (clientes → productos → precio_bruto) → pedidos (carga incremental).
+
+La orquestación se define como código utilizando Databricks Asset Bundles (DAB):
+
+atlikon_project-development/
+├── databricks.yml                    # Definición del bundle (nombre, espacio de trabajo de destino)
+└── resources/
+    └── daily_pipeline_job.yml        # Definición del Job: tareas, dependencias, programación
+- databricks.yml declara el bundle y el espacio de trabajo de destino para producción. Utiliza `${workspace.current_user.userName}` para que la ruta de despliegue se resuelva dinámicamente según el usuario, evitando así codificar una cuenta específica de forma estática. 
+- resources/daily_pipeline_job.yml define el DAG de 12 tareas (bronze → silver → gold, por dominio) con cadenas explícitas de `depends_on`, la programación cron y los parámetros base (`base_parameters`) que se pasan a cada notebook parametrizado. Las rutas de los notebooks son relativas a este archivo, lo que garantiza que el bundle sea portátil entre distintos espacios de trabajo.
+
+Para validar o desplegar el Job desde la CLI:
+
+bash
+databricks bundle validate --profile <tu-perfil>
+databricks bundle deploy --profile <tu-perfil>
+
+El comando `bundle deploy` lee estos archivos y crea o actualiza el Job en Databricks para que coincida con la configuración; de este modo, los cambios en la orquestación siguen el mismo flujo de trabajo de Git que el resto del código, en lugar de editarse únicamente a través de la interfaz de usuario de Jobs.
 
 Un **Databricks Job** ejecuta la canalización completa diariamente a las **23:00**, procesando los *notebooks* según el orden de dependencia: setup (una sola vez) → dimensiones (clients, products, gross price) → orders (carga incremental). Actualmente, la definición del trabajo reside en el espacio de trabajo de Databricks. 
 
