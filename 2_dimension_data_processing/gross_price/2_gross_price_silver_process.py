@@ -102,7 +102,7 @@ display(df_silver.limit(10))
 
 # COMMAND ----------
 
-df_products = spark.table("fmcg.silver.products") 
+df_products = spark.table(f"{catalog}.{silver_schema}.products")
 df_joined = (
     df_silver
     .join(

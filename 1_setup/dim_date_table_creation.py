@@ -8,6 +8,23 @@ from pyspark.sql import functions as F
 
 # COMMAND ----------
 
+# MAGIC %run ./utilities
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Configure widgets
+
+# COMMAND ----------
+
+dbutils.widgets.text("catalog", "fmcg", "Catalog")
+
+catalog = dbutils.widgets.get("catalog")
+
+print(f"catalog: {catalog}")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Define start and end dates
 
@@ -64,7 +81,7 @@ display(df)
     .write
     .format("delta")
     .mode("overwrite")
-    .saveAsTable("fmcg.gold.dim_date")
+    .saveAsTable(f"{catalog}.{gold_schema}.dim_date")
 )
 
 # COMMAND ----------
@@ -74,7 +91,8 @@ display(df)
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC SELECT * 
-# MAGIC FROM fmcg.gold.dim_date
-# MAGIC LIMIT 10; 
+query = f"SELECT * FROM {catalog}.{gold_schema}.dim_date LIMIT 10;"
+
+df_check = spark.sql(query)
+
+display(df_check)

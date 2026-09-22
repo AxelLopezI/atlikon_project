@@ -83,13 +83,13 @@ display(df_check.limit(10))
 
 # COMMAND ----------
 
-df_sb_products = spark.sql(f"SELECT product_code, division, category, product, variant FROM fmcg.gold.sb_dim_products;")
+df_sb_products = spark.sql(f"SELECT product_code, division, category, product, variant FROM {catalog}.{gold_schema}.sb_dim_products;")
 
 display(df_sb_products.limit(10))
 
 # COMMAND ----------
 
-delta_table = DeltaTable.forName(spark, "fmcg.gold.dim_products")
+delta_table = DeltaTable.forName(spark, f"{catalog}.{gold_schema}.dim_products")
 
 delta_table.alias("target").merge(
     source = df_sb_products.alias("source"),

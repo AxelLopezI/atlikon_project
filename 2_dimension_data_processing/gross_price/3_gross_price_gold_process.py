@@ -85,7 +85,7 @@ display(df_check.limit(10))
 
 # COMMAND ----------
 
-df_gold_price = spark.table("fmcg.gold.sb_dim_gross_price")
+df_gold_price = spark.table(f"{catalog}.{gold_schema}.sb_dim_gross_price")
 
 display(df_gold_price.limit(10))
 
@@ -174,7 +174,7 @@ display(df_gold_latest_price.limit(10))
 
 # COMMAND ----------
 
-delta_table = DeltaTable.forName(spark, "fmcg.gold.dim_gross_price")
+delta_table = DeltaTable.forName(spark, f"{catalog}.{gold_schema}.dim_gross_price")
 
 delta_table.alias("target").merge(
     source = df_gold_latest_price.alias("source"),
