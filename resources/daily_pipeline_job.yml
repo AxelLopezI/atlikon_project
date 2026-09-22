@@ -1,0 +1,113 @@
+resources:
+  jobs:
+    Atlikon_Project_Incremental_Update:
+      name: Atlikon Project Incremental Update
+      schedule:
+        quartz_cron_expression: 32 0 23 * * ?
+        timezone_id: America/Mexico_City
+        pause_status: PAUSED
+      tasks:
+        - task_key: create_target_tables
+          notebook_task:
+            notebook_path: ../1_setup/create_target_tables.py
+            base_parameters:
+              catalog: fmcg
+        - task_key: dim_customers_bronze
+          depends_on:
+            - task_key: create_target_tables
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/customers/1_customers_bronze_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: customers
+        - task_key: dim_customers_silver
+          depends_on:
+            - task_key: dim_customers_bronze
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/customers/2_customers_silver_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: customers
+        - task_key: dim_customers_gold
+          depends_on:
+            - task_key: dim_customers_silver
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/customers/3_customers_gold_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: customers
+        - task_key: dim_products_bronze
+          depends_on:
+            - task_key: dim_customers_gold
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/products/1_products_bronze_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: products
+        - task_key: dim_products_silver
+          depends_on:
+            - task_key: dim_products_bronze
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/products/2_products_silver_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: products
+        - task_key: dim_products_gold
+          depends_on:
+            - task_key: dim_products_silver
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/products/3_products_gold_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: products
+        - task_key: dim_prices_bronze
+          depends_on:
+            - task_key: dim_products_gold
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/gross_price/1_gross_price_bronze_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: gross_price
+        - task_key: dim_prices_silver
+          depends_on:
+            - task_key: dim_prices_bronze
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/gross_price/2_gross_price_silver_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: gross_price
+        - task_key: dim_prices_gold
+          depends_on:
+            - task_key: dim_prices_silver
+          notebook_task:
+            notebook_path: ../2_dimension_data_processing/gross_price/3_gross_price_gold_process.py
+            base_parameters:
+              catalog: fmcg
+              data_source: gross_price
+        - task_key: fact_orders_bronze
+          depends_on:
+            - task_key: dim_prices_gold
+          notebook_task:
+            notebook_path: ../3_fact_data_processing/orders_incremental_load/1_orders_bronze_incremental_load.py
+            base_parameters:
+              catalog: fmcg
+              data_source: orders
+        - task_key: fact_orders_silver
+          depends_on:
+            - task_key: fact_orders_bronze
+          notebook_task:
+            notebook_path: ../3_fact_data_processing/orders_incremental_load/2_orders_silver_incremental_load.py
+            base_parameters:
+              catalog: fmcg
+              data_source: orders
+        - task_key: fact_orders_gold
+          depends_on:
+            - task_key: fact_orders_silver
+          notebook_task:
+            notebook_path: ../3_fact_data_processing/orders_incremental_load/3_orders_gold_incremental_load.py
+            base_parameters:
+              catalog: fmcg
+              data_source: orders
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
