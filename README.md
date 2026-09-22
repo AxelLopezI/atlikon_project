@@ -115,6 +115,14 @@ atlikon_project-development/
 │   ├── setup_catalogs.py            # Crea el catálogo y los esquemas bronze/silver/gold 
 │   ├── utilities.py                 # Constantes de nombres de esquemas compartidos (presentes en todos los notebooks) 
 │   └── dim_date_table_creation.py   # Construye la tabla gold dim_date
+│   └── create_target_tables.py      # DDL para dim_customers/dim_products/dim_gross_price/fact_orders
+│
+├── sample_data/                     # Archivos CSV sintéticos para una ejecución local o sin conexión (consulta su archivo README).
+│   ├── README.md
+│   ├── customers.csv
+│   ├── products.csv
+│   ├── gross_price.csv
+│   └── orders.csv
 │
 ├── 2_dimension_data_processing/
 │   ├── customers/                   # 1_bronze → 2_silver → 3_gold
