@@ -7,7 +7,14 @@ resources:
         timezone_id: America/Mexico_City
         pause_status: PAUSED
       tasks:
+        - task_key: create_target_tables
+          notebook_task:
+            notebook_path: ../1_setup/create_target_tables.py
+            base_parameters:
+              catalog: fmcg
         - task_key: dim_customers_bronze
+          depends_on:
+            - task_key: create_target_tables
           notebook_task:
             notebook_path: ../2_dimension_data_processing/customers/1_customers_bronze_process.py
             base_parameters:
