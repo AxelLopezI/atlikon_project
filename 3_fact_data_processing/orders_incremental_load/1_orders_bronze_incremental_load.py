@@ -53,16 +53,31 @@ bronze_table = f"{catalog}.{bronze_schema}.{data_source}"
 
 # MAGIC %md
 # MAGIC ## Read files from landing path
+# MAGIC If there are no new CSV files, build an empty DataFrame with the existing 
+# MAGIC bronze table's schema instead of letting the wildcard read fail with PATH_NOT_FOUND.
 
 # COMMAND ----------
 
-df = (
-    spark.read
-    .options(header=True, inferSchema=True)
-    .csv(f"{landing_path}/*.csv")
-    .withColumn("read_timestamp", F.current_timestamp())
-    .select("*", "_metadata.file_name", "_metadata.file_size")
-)
+try:
+    landing_files = [
+        f for f in dbutils.fs.ls(landing_path)
+        if f.name.lower().endswith(".csv")
+    ]
+except Exception:
+    landing_files = []
+
+if landing_files:
+    df = (
+        spark.read
+        .options(header=True, inferSchema=True)
+        .csv([f.path for f in landing_files])
+        .withColumn("read_timestamp", F.current_timestamp())
+        .select("*", "_metadata.file_name", "_metadata.file_size")
+    )
+else:
+    print("No new CSV files found in landing/. Creating an empty DataFrame using the existing bronze schema.")
+    existing_schema = spark.table(bronze_table).schema
+    df = spark.createDataFrame([], schema=existing_schema)
 
 print("Total rows: ", df.count())
 display(df.limit(10))
@@ -104,8 +119,7 @@ display(df.limit(10))
 
 # COMMAND ----------
 
-files = dbutils.fs.ls(landing_path)
-for file_info in files:
+for file_info in landing_files:
     dbutils.fs.mv(
         file_info.path,
         f"{processed_path}/{file_info.name}",
